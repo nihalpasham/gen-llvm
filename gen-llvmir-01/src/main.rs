@@ -53,6 +53,20 @@ fn main() -> Result<(), &'static str> {
     let context = Context::create();
     let module = build_hello_world_module(&context);
 
+    let path = Path::new("./hello_world_module.bc").to_path_buf();
+    match module.write_bitcode_to_path(&path) {
+        true => {
+            let mut command = Command::new("llvm-dis");
+            let cmd = command.arg(path);
+            let output = cmd.output().expect("failed to run llvm-dis");
+            stdout().write_all(&output.stdout).unwrap();
+            stderr().write_all(&output.stderr).unwrap();
+        }
+        false => {
+            println!("couldn't write module to path")
+        }
+    };
+
     let target_machine = get_target_machine().unwrap();
     // let _object = target_machine
     //     .write_to_memory_buffer(&module, FileType::Object)
